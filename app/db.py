@@ -1,5 +1,4 @@
-import os 
-import psycopg
+import os, psycopg
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -10,22 +9,44 @@ def create_schema():
     with get_conn() as conn, conn.cursor() as cur:
         # Create the schema
         cur.execute("""
-            -- sample parent table
-            CREATE TABLE IF NOT EXISTS foo (
-                id SERIAL PRIMARY KEY, -- primary key
+            -----------
+            -- rooms
+            -----------
+            CREATE TABLE IF NOT EXISTS rooms (
+                id SERIAL PRIMARY KEY,
+                room_number INT NOT NULL,
                 created_at TIMESTAMP DEFAULT now()
-            );
+            );       
+            -- add columns
+            ALTER TABLE rooms ADD COLUMN IF NOT EXISTS room_type VARCHAR;
+            ALTER TABLE rooms ADD COLUMN IF NOT EXISTS price NUMERIC;
 
-            -- relation table (reference to foo)
-            CREATE TABLE IF NOT EXISTS sub_foo (
-                id SERIAL PRIMARY KEY, -- primary key
+            -----------
+            -- guests
+            -----------
+            CREATE TABLE IF NOT EXISTS guests (
+                id SERIAL PRIMARY KEY,
+                firstname VARCHAR NOT NULL,
+                lastname VARCHAR NOT NULL,
                 created_at TIMESTAMP DEFAULT now(),
-                foo_id INT REFERENCES foo(id),
+                address VARCHAR
+            );
+                    
+            -----------
+            -- bookings
+            -----------    
+            CREATE TABLE IF NOT EXISTS bookings (
+                id SERIAL PRIMARY KEY,
+                guest_id INT REFERENCES guests(id), -- foreign key (främmande nyckel)
+                room_id INT REFERENCES rooms(id),
+                datefrom DATE DEFAULT now(),
+                dateto DATE DEFAULT now(),
                 info VARCHAR
             );
+            -- man kan sätta default också senare:
+            -- ALTER COLUMN datefrom SET DEFAULT now();
+            -- lägg till främmande nyckel senare:
+            -- ADD CONSTRAINT guest_id_key FOREIGN KEY (guest_id) REFERENCES guests(id);
 
-            -- lägg till nya kolumner
-            ALTER TABLE foo ADD COLUMN IF NOT EXISTS name VARCHAR;
+
         """)
-
-
