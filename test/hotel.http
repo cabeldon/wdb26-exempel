@@ -1,5 +1,8 @@
 @apiUrl = http://127.0.0.1:8080
 
+# Rest-Client kan läsa variabler ur .env
+@api_key = {{$dotenv API_KEY2}}
+
 ### Get all rooms
 GET {{apiUrl}}/rooms
 
@@ -10,10 +13,13 @@ GET {{apiUrl}}/bookings
 ### Create booking
 POST {{apiUrl}}/bookings
 Content-Type: application/json
+X-API-Key: {{api_key}}
 
 {
     "room_id": 2,
-    "guest_id": 1,
-    "datefrom": "2026-05-01",
-    "dateto": "2026-05-03"
+    "datefrom": "2026-06-01",
+    "dateto": "2026-05-03",
+    "info": "info..."
 }
+
+### 

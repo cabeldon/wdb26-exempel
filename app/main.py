@@ -37,12 +37,17 @@ def validate_api_key(api_key: str = Depends(api_key_header)):
         return guest
         
 
-# datamodell för bokning
+# datamodell för ny bokning
 class Booking(BaseModel):
-    guest_id: int
+    #guest_id: int # kommer via api-ley i stället
     room_id: int
     datefrom: date 
     dateto: date
+    info: str
+
+# datamodell för uppdatera bokning
+class BookingUpdate(BaseModel):
+    stars: int
 
 # Main route for this API
 @app.get("/")
@@ -128,25 +133,46 @@ def get_bookings(guest: dict = Depends(validate_api_key)):
 
 # Create booking
 @app.post("/bookings")
-def create_booking(booking: Booking):
+def create_booking(booking: Booking, guest: dict = Depends(validate_api_key)):
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute("""
             INSERT INTO bookings (
                 guest_id,
                 room_id,
                 datefrom,
-                dateto
+                dateto,
+                info
             ) VALUES (
-                %s, %s, %s, %s
+                %s, %s, %s, %s, %s
             ) RETURNING id
         """, (
-            booking.guest_id, 
+            guest['id'], 
             booking.room_id,
             booking.datefrom,
-            booking.dateto
+            booking.dateto,
+            booking.info
         ))
         new_booking = cur.fetchone()
     return { "msg": "Booking created!", "id": new_booking['id']}
+
+# Update booking
+@app.put("/bookings/{id}")
+def update_booking(id: int, booking: BookingUpdate, 
+    guest: dict = Depends(validate_api_key)):
+
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("""
+            UPDATE bookings SET
+                stars = %s
+            WHERE id = %s
+                AND guest_id = %s
+            RETURNING *
+        """, [booking.stars, id, guest['id']])
+        updated_booking = cur.fetchone()
+        if updated_booking:
+            return { "msg": "booking updated!"}
+        else:
+            raise HTTPException(status_code=404, detail={"error": "Booking not found"})
 
 
 
