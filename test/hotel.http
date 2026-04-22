@@ -1,11 +1,13 @@
 @apiUrl = http://127.0.0.1:8080
 
 # Rest-Client kan läsa variabler ur .env
-@api_key = {{$dotenv API_KEY2}}
+@api_key = {{$dotenv API_KEY}}
 
 ### Get all rooms
 GET {{apiUrl}}/rooms
 
+### Get all guests
+GET {{apiUrl}}/guests
 
 ### Get bookings
 GET {{apiUrl}}/bookings
@@ -22,4 +24,11 @@ X-API-Key: {{api_key}}
     "info": "info..."
 }
 
-### 
+### Uppdatera bokning
+PUT {{apiUrl}}/bookings/2
+Content-Type: application/json
+X-API-Key: {{api_key}}
+
+{
+    "stars": 4
+}
